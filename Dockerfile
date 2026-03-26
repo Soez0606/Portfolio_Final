@@ -14,26 +14,33 @@ RUN apt-get update && apt-get install -y \
     libicu-dev \
     && docker-php-ext-install pdo pdo_mysql zip mbstring bcmath intl
 
+# Active le module Apache rewrite (important pour les routes Laravel)
+RUN a2enmod rewrite
+
 # Installe Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copie le code source
+# Copie le code source dans le conteneur
 COPY . /var/www/html
 
-# Installe les dépendances PHP
-RUN composer install --optimize-autoloader --no-dev
+# Définit le dossier de travail
+WORKDIR /var/www/html
 
-# Configure les permissions
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+# Installe les dépendances PHP (ignore les scripts pour éviter les erreurs de DB au build)
+RUN composer install --optimize-autoloader --no-dev --no-scripts
 
-# Change le DocumentRoot vers /public pour Laravel
+# Configure le DocumentRoot pour pointer vers /public
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
-# Configure Apache pour écouter sur le port fourni par Railway
-RUN sed -i 's/80/${PORT}/g' /etc/apache2/sites-available/0000-default.conf /etc/apache2/ports.conf
+# CORRECTION : Configure Apache pour écouter sur le port variable de Railway ($PORT)
+# Note : Railway utilise souvent le port 8080 par défaut si non spécifié, mais $PORT est plus sûr.
+RUN sed -i "s/80/\${PORT}/g" /etc/apache2/sites-available/000-default.conf /etc/apache2/ports.conf
 
-# Active le module Apache rewrite
-RUN a2enmod rewrite 
+# Ajuste les permissions pour Laravel
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+
+# Commande de lancement
+CMD ["apache2-foreground"]
