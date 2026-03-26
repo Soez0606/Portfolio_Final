@@ -13,12 +13,13 @@ return new class extends Migration
     {
         Schema::create('experiences', function (Blueprint $table) {
             $table->id();
+            $table->string('job_title'); // C'est cette colonne qui manque
             $table->string('company');
-            $table->string('position');
             $table->string('location')->nullable();
             $table->date('start_date');
             $table->date('end_date')->nullable();
             $table->text('description');
+            $table->string('technologies')->nullable();
             $table->timestamps();
         });
     }
