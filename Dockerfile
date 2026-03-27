@@ -17,6 +17,10 @@ RUN apt-get update && apt-get install -y \
 # Active le module Apache rewrite (important pour les routes Laravel)
 RUN a2enmod rewrite
 
+# Ensure only mpm_prefork is enabled — prevents "More than one MPM loaded" crash
+RUN a2dismod mpm_worker mpm_event 2>/dev/null || true
+RUN a2enmod mpm_prefork
+
 # Installe Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
