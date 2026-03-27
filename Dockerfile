@@ -14,6 +14,11 @@ RUN apt-get update && apt-get install -y \
     libicu-dev \
     && docker-php-ext-install pdo pdo_mysql zip mbstring bcmath intl
 
+# Disable conflicting MPM modules and enable only mpm_event to prevent
+# the "More than one MPM loaded" error that crashes Apache on startup
+RUN a2dismod mpm_prefork mpm_worker || true \
+    && a2enmod mpm_event
+
 # Active le module Apache rewrite (important pour les routes Laravel)
 RUN a2enmod rewrite
 
