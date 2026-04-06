@@ -1,6 +1,6 @@
 FROM php:8.4-apache
 
-# Install system dependencies
+# Install system dependencies and Node.js (LTS via NodeSource)
 RUN apt-get update && apt-get install -y \
     libzip-dev \
     zip \
@@ -11,6 +11,8 @@ RUN apt-get update && apt-get install -y \
     libonig-dev \
     libxml2-dev \
     libicu-dev \
+    && curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - \
+    && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions

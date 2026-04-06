@@ -14,6 +14,10 @@ fi
 a2dismod mpm_worker mpm_event 2>/dev/null || true
 a2enmod mpm_prefork
 
+# Install Node.js dependencies and build Vite assets
+npm ci --prefer-offline
+npm run build
+
 # Run Laravel bootstrap tasks
 php artisan config:cache
 php artisan route:cache
