@@ -26,10 +26,9 @@ RUN docker-php-ext-install \
     bcmath \
     intl
 
-# Enable Apache rewrite module and fix MPM conflicts
-RUN a2enmod rewrite \
-    && a2dismod mpm_worker mpm_event \
-    && a2enmod mpm_prefork
+# Enable Apache rewrite module and force MPM prefork
+RUN a2dismod mpm_event mpm_worker || true \
+    && a2enmod mpm_prefork rewrite
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
