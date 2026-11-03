@@ -11,7 +11,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // Railway termine le HTTPS sur son proxy : on fait confiance aux en-têtes X-Forwarded-*
+        // pour que les URLs (assets Vite, Livewire, Filament) soient générées en https.
+        $middleware->trustProxies(at: '*');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

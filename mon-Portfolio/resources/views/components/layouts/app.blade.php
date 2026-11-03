@@ -23,7 +23,65 @@
     </div>
 
 
-    <main class="max-w-5xl mx-auto p-6">
+    @php
+        $navLinks = [
+            ['label' => 'Accueil', 'href' => url('/'), 'active' => request()->is('/')],
+            ['label' => 'Compétences', 'href' => url('/#skills'), 'active' => false],
+            ['label' => 'Expériences', 'href' => route('experiences'), 'active' => request()->is('experiences')],
+            ['label' => 'Parcours', 'href' => route('education.index'), 'active' => request()->is('parcours')],
+            ['label' => 'Projets', 'href' => route('projects.index'), 'active' => request()->is('projets')],
+            ['label' => 'Veille', 'href' => route('veille'), 'active' => request()->is('veille')],
+        ];
+    @endphp
+
+    <nav x-data="{ open: false }" @keydown.escape.window="open = false"
+        class="fixed top-4 inset-x-4 md:top-8 md:inset-x-auto md:left-1/2 md:-translate-x-1/2 z-50">
+        <div
+            class="bg-white/90 backdrop-blur-md border border-white/40 px-5 md:px-8 py-3 rounded-3xl md:rounded-full shadow-2xl">
+
+            {{-- Mobile : nom + bouton menu --}}
+            <div class="flex items-center justify-between md:hidden">
+                <a href="/" class="text-xs font-black uppercase tracking-[0.2em] text-slate-900">Soëz Masurier</a>
+                <button type="button" @click="open = !open" :aria-expanded="open.toString()" aria-controls="mobile-menu"
+                    class="p-2 -mr-2 rounded-full text-slate-600 hover:bg-slate-100 transition">
+                    <span class="sr-only">Ouvrir le menu</span>
+                    <svg x-show="!open" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-width="2" d="M4 7h16M4 12h16M4 17h16" />
+                    </svg>
+                    <svg x-show="open" x-cloak class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-width="2" d="M6 6l12 12M18 6L6 18" />
+                    </svg>
+                </button>
+            </div>
+
+            <ul id="mobile-menu" x-show="open" x-cloak x-transition.origin.top
+                class="md:hidden flex flex-col gap-1 pt-3 mt-3 border-t border-slate-100">
+                @foreach($navLinks as $link)
+                    <li>
+                        <a href="{{ $link['href'] }}" @click="open = false"
+                            @if($link['active']) aria-current="page" @endif
+                            class="block px-3 py-2.5 rounded-xl text-xs font-black uppercase tracking-[0.2em] {{ $link['active'] ? 'bg-slate-900 text-white' : 'text-slate-500 hover:bg-slate-50' }}">
+                            {{ $link['label'] }}
+                        </a>
+                    </li>
+                @endforeach
+            </ul>
+
+            {{-- Desktop --}}
+            <ul class="hidden md:flex items-center gap-6 lg:gap-10">
+                @foreach($navLinks as $link)
+                    <li>
+                        <a href="{{ $link['href'] }}" @if($link['active']) aria-current="page" @endif
+                            class="text-xs font-black uppercase tracking-[0.2em] whitespace-nowrap {{ $link['active'] ? 'text-slate-800' : 'text-slate-400' }} hover:text-blue-600 transition-colors">
+                            {{ $link['label'] }}
+                        </a>
+                    </li>
+                @endforeach
+            </ul>
+        </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 pt-24 md:pt-28 pb-6">
         {{ $slot }}
     </main>
 
@@ -36,31 +94,15 @@
         $instagram = \App\Models\Setting::where('key', 'link_instagram')->first()?->value;
     @endphp
 
-    <footer class="mt-20 border-t border-slate-100 bg-white/50 backdrop-blur-md">
-    </footer>
-
-    <nav class="fixed top-8 left-1/2 -translate-x-1/2 z-">
-        <div
-            class="bg-white/90 backdrop-blur-md border border-white/40 px-8 py-3 rounded-full shadow-2xl flex items-center gap-10">
-        </div>
-    </nav>
-
-    @livewireScripts
-</body>
-
-</html>
-@php
-    $email = \App\Models\Setting::where('key', 'contact_email')->first()?->value;
-    $linkedin = \App\Models\Setting::where('key', 'link_linkedin')->first()?->value;
-    $github = \App\Models\Setting::where('key', 'link_github')->first()?->value;
-    $instagram = \App\Models\Setting::where('key', 'link_instagram')->first()?->value;
-@endphp
-
 <footer class="mt-20 border-t border-slate-100 bg-white/50 backdrop-blur-md">
     <div class="max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-3 gap-12">
 
         <div class="space-y-4">
-            <h3 class="text-xs font-black uppercase tracking-[0.3em] text-slate-900">Masurier Soëz</h3>
+            <h3 class="text-xs font-black uppercase tracking-[0.3em] text-slate-900">
+                <a href="/admin" class="hover:cursor-default select-none">
+                    Masurier Soëz
+                </a>
+            </h3>
             <p class="text-sm text-slate-500">Portfolio développé avec Laravel & Filament.</p>
         </div>
 
@@ -73,7 +115,7 @@
                 @endif
                 <div class="flex gap-4 pt-2">
                     @if($linkedin)
-                        <a href="{{ $linkedin }}" target="_blank"
+                        <a href="{{ $linkedin }}" target="_blank" rel="noopener noreferrer"
                             class="text-slate-400 hover:text-[#0077b5] transition-all transform hover:scale-110"
                             title="LinkedIn">
                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -84,7 +126,7 @@
                     @endif
 
                     @if($github)
-                        <a href="{{ $github }}" target="_blank"
+                        <a href="{{ $github }}" target="_blank" rel="noopener noreferrer"
                             class="text-slate-400 hover:text-[#333] transition-all transform hover:scale-110"
                             title="GitHub">
                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -95,7 +137,7 @@
                     @endif
 
                     @if($instagram)
-                        <a href="{{ $instagram }}" target="_blank"
+                        <a href="{{ $instagram }}" target="_blank" rel="noopener noreferrer"
                             class="text-slate-400 hover:text-[#e4405f] transition-all transform hover:scale-110"
                             title="Instagram">
                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -117,50 +159,7 @@
     </div>
 </footer>
 
-<nav class="fixed top-8 left-1/2 -translate-x-1/2 z-90">
-    <div
-        class="bg-white/90 backdrop-blur-md border border-white/40 px-8 py-3 rounded-full shadow-2xl flex items-center gap-10">
-
-        {{-- 1. ACCUEIL --}}
-        <a href="/"
-            class="text-xs font-black uppercase tracking-[0.2em] {{ request()->is('/') ? 'text-slate-800 font-extrabold' : 'text-slate-400' }} hover:text-blue-600 transition-colors">
-            Accueil
-        </a>
-
-        {{-- 2. COMPÉTENCES --}}
-        <a href="/#skills"
-            class="text-xs font-black uppercase tracking-[0.2em] text-slate-400 hover:text-blue-600 transition-colors">
-            Compétences
-        </a>
-
-        {{-- 3. EXPÉRIENCES --}}
-        <a href="{{ route('experiences') }}"
-            class="text-xs font-black uppercase tracking-[0.2em] {{ request()->is('experiences') ? 'text-slate-800' : 'text-slate-400' }} hover:text-blue-600 transition-colors">
-            Expériences
-        </a>
-
-        {{-- 4. PARCOURS SCOLAIRE --}}
-        <a href="{{ route('education.index') }}"
-            class="text-xs font-black uppercase tracking-[0.2em] {{ request()->is('parcours') ? 'text-slate-800' : 'text-slate-400' }} hover:text-blue-600 transition-colors">
-            Parcours scolaire
-        </a>
-
-        {{-- 5. PROJETS --}}
-        <a href="{{ route('projects.index') }}"
-            class="text-xs font-black uppercase tracking-[0.2em] {{ request()->is('projets') ? 'text-slate-800' : 'text-slate-400' }} hover:text-blue-600 transition-colors">
-            Projets
-        </a>
-
-        {{-- 6. VEILLE TECHNOLOGIQUE --}}
-        <a href="{{ route('veille') }}"
-            class="text-xs font-black uppercase tracking-[0.2em] {{ request()->is('veille') ? 'text-slate-800' : 'text-slate-400' }} hover:text-blue-600 transition-colors">
-            Veille Technologique
-        </a>
-
-    </div>
-</nav>
-
-@livewireScripts
+    @livewireScripts
 </body>
 
 </html>
