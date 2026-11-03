@@ -41,7 +41,16 @@ class SkillResource extends Resource
                                 'soft' => 'Soft Skill (Humaine)',
                             ])
                             ->required()
+                            ->live()
                             ->native(false), // Look plus moderne
+
+                        // Regroupe les hard skills sur le site (Langages, Frameworks...)
+                        Select::make('category')
+                            ->label('Groupe')
+                            ->options(Skill::CATEGORIES)
+                            ->placeholder('Autres')
+                            ->visible(fn (Forms\Get $get) => $get('type') === 'hard')
+                            ->native(false),
                     ])
             ]);
     }
@@ -63,6 +72,12 @@ class SkillResource extends Resource
                         'soft' => 'success',
                         default => 'gray',
                     })
+                    ->sortable(),
+
+                TextColumn::make('category')
+                    ->label('Groupe')
+                    ->formatStateUsing(fn (?string $state): string => Skill::CATEGORIES[$state] ?? '—')
+                    ->placeholder('—')
                     ->sortable(),
 
                 TextColumn::make('created_at')

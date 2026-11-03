@@ -9,7 +9,7 @@ Route::get('/', Home::class);
 
 Route::get('/projets', function () {
     return view('projects.index', [
-        'projects' => \App\Models\Project::all()
+        'projects' => \App\Models\Project::orderBy('order')->latest()->get()
     ]);
 })->name('projects.index');
 
